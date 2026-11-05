@@ -1,0 +1,104 @@
+/* ---------------------------------------------------------------- base */
+:root {
+  --paper: #fbfaf8;
+  --ink: #4f4a47;
+  --ink-soft: #7d7671;
+  --serif: 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-weight: 300;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------------------------------------------------------------- world */
+#world {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh; /* large viewport: mobile toolbars don't resize the scene */
+  pointer-events: none;
+}
+
+#scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  transition: opacity 1.4s ease;
+}
+/* Hidden benchmark: still rendered and composited, but invisible. */
+#scene.benching { opacity: 0.001; transition: none; }
+
+#grain {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- focus */
+:focus { outline: none; }
+:focus-visible {
+  outline: 1.5px solid rgba(79, 74, 71, 0.55);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+/* ---------------------------------------------------------------- debug panel (?debug) */
+.dbg {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 1000;
+  width: min(330px, calc(100vw - 16px));
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  font: 11px/1.35 ui-monospace, Menlo, Consolas, monospace;
+  color: #3d3a38;
+  background: rgba(255, 255, 255, 0.93); /* no backdrop blur: it re-blurs the canvas every frame */
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(60, 50, 40, 0.08);
+}
+.dbg .toggle {
+  position: sticky; top: 0; width: 100%; text-align: left;
+  background: rgba(250, 248, 244, 0.95); border: 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px 10px 0 0; padding: 6px 10px; font-weight: 600;
+}
+.dbg.collapsed { width: auto; }
+.dbg.collapsed .body { display: none; }
+.dbg .body { padding: 4px 10px 10px; }
+.dbg h3 { margin: 10px 0 4px; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a837d; }
+.dbg pre { margin: 0; white-space: pre-wrap; word-break: break-word; }
+.dbg pre.assets.bad { color: #a14b3c; }
+.dbg button, .dbg select {
+  font: inherit; color: inherit; cursor: pointer;
+  background: #fff; border: 1px solid rgba(0, 0, 0, 0.14); border-radius: 6px; padding: 4px 7px;
+}
+.dbg button:hover { background: #f6f2ec; }
+.dbg button.on { background: #e9efe6; border-color: #9db59a; }
+.dbg .row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+.dbg .row input[type=range] { flex: 1; }
+.dbg .val { color: #8a837d; }
+.dbg .tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.dbg .trow { display: flex; gap: 3px; }
+.dbg .trow .trig { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+.dbg .trow .undo { padding: 4px 6px; }
+
+/* ---------------------------------------------------------------- motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  #scene { transition-duration: 2s; }
+}
