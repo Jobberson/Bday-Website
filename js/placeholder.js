@@ -485,37 +485,13 @@
 
   // stargazing: little stars in the sky
   P.stars = function (ctx, c, r) {
-    var pos = [[640, 300], [760, 410], [1420, 300], [1360, 440], [1470, 520], [600, 520],
+    var pos = [[880, 250], [840, 450], [1420, 300], [1360, 440], [1470, 520], [600, 520],
       [300, 330], [180, 520], [420, 600], [1700, 300], [1850, 470], [1620, 600], [990, 270], [520, 260]];
     pos.forEach(function (p, i) {
       var s = 9 + r() * 9;
       if (i % 3 === 2) spot(ctx, p[0], p[1], s, s, c.ochre, 0.8);
       else sparkle(ctx, p[0], p[1], s, i % 2 ? c.ochre : mix(c.ochre, c.light, 0.5), 0.85);
     });
-  };
-
-  // breakfast in bed: a soft morning sun
-  P.sun = function (ctx, c, r, n) {
-    spot(ctx, 700, 330, 330, 330, c.light, 0.55);
-    wash(ctx, blob(700, 330, 72, 72, n, 3, 0.12, 40), mix(c.ochre, c.light, 0.35), 0.75, r, { jitter: 4, rim: 1, rimWidth: 14, lifts: 1 });
-  };
-
-  // sunset by the water: warm glow on the horizon and its reflection
-  P.sunset = function (ctx, c, r) {
-    var g = ctx.createLinearGradient(0, 760, 0, 1092);
-    g.addColorStop(0, U.rgba(c.coral, 0));
-    g.addColorStop(0.6, U.rgba(c.coral, 0.22));
-    g.addColorStop(1, U.rgba(c.rose, 0.32));
-    ctx.fillStyle = g;
-    ctx.fillRect(-60, 760, 2170, 332);
-    spot(ctx, 1500, 1060, 420, 120, c.ochre, 0.3);
-    ctx.lineCap = 'round';
-    for (var i = 0; i < 26; i++) {
-      var y = 1104 + Math.pow(r(), 1.4) * 130, x = 1500 + (r() - 0.5) * 520 * (1 - (y - 1104) / 200), len = 40 + r() * 140;
-      ctx.strokeStyle = U.rgba(i % 2 ? c.coral : c.ochre, 0.14 + r() * 0.2);
-      ctx.lineWidth = 2 + r() * 3;
-      ctx.beginPath(); ctx.moveTo(x - len / 2, y); ctx.lineTo(x + len / 2, y + (r() - 0.5) * 3); ctx.stroke();
-    }
   };
 
   // movie night: fairy lights strung through the branches
@@ -537,70 +513,189 @@
     });
   };
 
-  // picnic: a gingham blanket and a basket
-  P.blanket = function (ctx, c, r, n) {
-    var q = [[700, 1440], [745, 1385], [960, 1392], [950, 1452]];
-    wash(ctx, q, c.rose, 0.85, r, { jitter: 4, passes: 3, rim: 1, rimWidth: 8 });
+  // questions night: a soft crescent moon (next to the stars)
+  P.moon = function (ctx, c, r, n) {
     ctx.save();
-    ctx.beginPath(); q.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.closePath();
-    ctx.clip();
+    wash(ctx, blob(700, 330, 62, 62, n, 11, 0.06, 40), mix(c.ochre, '#fff6e0', 0.55), 0.85, r, { jitter: 3, passes: 3, rim: 0.8, rimWidth: 10 });
+    // carve the crescent out of the full disc
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-    ctx.lineWidth = 8;
-    for (var i = 0; i < 9; i++) { // stripes across and along, in perspective
-      var t = (i + 0.5) / 9;
-      ctx.beginPath(); ctx.moveTo(700 + 45 * (1 - t) + 0 * t, 1440 - 55 * t); ctx.lineTo(950 + 10 * t, 1452 - 60 * t); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(700 + 250 * t, 1440 + 12 * t); ctx.lineTo(745 + 215 * t, 1385 + 7 * t); ctx.stroke();
-    }
+    ctx.fillStyle = 'rgba(0,0,0,1)';
+    path(ctx, blob(730, 312, 56, 58, n, 12, 0.05, 40));
+    ctx.fill();
+    // then the soft glow, painted underneath so it stays whole
+    ctx.globalCompositeOperation = 'destination-over';
+    spot(ctx, 690, 336, 210, 210, mix(c.light, '#ffffff', 0.4), 0.45);
     ctx.restore();
-    // basket
-    wash(ctx, [[880, 1380], [940, 1378], [934, 1412], [886, 1414]], c.trunk, 0.7, r, { jitter: 2, passes: 3, rim: 1.2, rimWidth: 6, shade: 0.6, shadeTo: 'right' });
-    ctx.strokeStyle = U.rgba(c.trunk, 0.7);
-    ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(887, 1382); ctx.quadraticCurveTo(910, 1340, 934, 1380); ctx.stroke();
   };
 
-  // pottery: a little hand-made pot with a flower
-  P.pot = function (ctx, c, r, n) {
-    var x = 1000, y = 1440;
-    taper(ctx, x + 4, y - 58, x - 6, y - 90, x + 2, y - 120, 4, 3, c.blade, 0.7);
-    wash(ctx, blob(x + 2, y - 128, 16, 13, n, 7, 0.3, 14), c.blossom, 0.8, r, { jitter: 2, passes: 3, rim: 1.2, rimWidth: 5 });
-    var body = [[x - 24, y - 60], [x + 24, y - 60], [x + 30, y - 40], [x + 36, y - 18], [x + 22, y], [x - 22, y], [x - 36, y - 18], [x - 30, y - 40]];
-    wash(ctx, body, mix(c.coral, c.trunk, 0.35), 0.8, r, { jitter: 2, passes: 3, rim: 1.3, rimWidth: 8, shade: 0.8, shadeTo: 'right', lifts: 1 });
-    ctx.fillStyle = U.rgba(darker(c.coral, 0.3), 0.5);
-    ctx.beginPath(); ctx.ellipse(x, y - 60, 26, 6, 0, 0, Math.PI * 2); ctx.fill();
-  };
-
-  // bookstore: a small stack of books by the trunk
-  P.books = function (ctx, c, r) {
-    var x = 1240, y = 1446, cols = [c.waterDeep, c.rose, c.ochre];
-    for (var i = 0; i < 3; i++) {
-      var w = 110 - i * 12, h = 22, bx = x + (r() - 0.5) * 14, by = y - i * h;
-      ctx.save();
-      ctx.translate(bx, by);
-      ctx.rotate((r() - 0.5) * 0.08);
-      wash(ctx, [[-w / 2, -h], [w / 2, -h], [w / 2, 0], [-w / 2, 0]], cols[i], 0.75, r, { jitter: 2, passes: 3, rim: 1.2, rimWidth: 5 });
-      ctx.fillStyle = 'rgba(252,250,246,0.85)'; // pages
-      ctx.fillRect(w / 2 - 12, -h + 4, 9, h - 8);
-      ctx.restore();
-    }
-  };
-
-  // cook something new: a tiny vegetable patch
-  P.veggies = function (ctx, c, r, n) {
-    for (var row = 0; row < 3; row++) {
-      var y = 1310 + row * 26, x0 = 1290 + row * 6, x1 = 1440 - row * 4;
-      wash(ctx, [[x0, y - 6], [x1, y - 8], [x1 + 4, y + 6], [x0 - 4, y + 8]], c.trunk, 0.45, r, { jitter: 3, passes: 2, rim: 0.8, rimWidth: 5 });
-      for (var x = x0 + 10; x < x1; x += 22 + r() * 8) {
-        wash(ctx, blob(x, y - 10, 11, 8, n, x * 0.1 + row, 0.4, 12), row === 1 ? c.leaf3 : c.leaf, 0.7, r, { jitter: 2, passes: 2, rim: 1, rimWidth: 4 });
-        if (row !== 1 && r() < 0.6) spot(ctx, x + 6, y - 6, 6, 6, row ? c.coral : c.rose, 0.95);
+  // paint together: a watercolor rainbow arching behind the hills
+  P.rainbow = function (ctx, c, r) {
+    var bands = [c.rose, c.coral, c.ochre, c.leaf2, c.sky, '#b9a7cf'];
+    var cx = 1024, cy = 1180, outer = 770, bw = 22;
+    ctx.lineCap = 'round';
+    bands.forEach(function (col, i) {
+      var rad = outer - i * bw;
+      for (var pass = 0; pass < 3; pass++) {
+        ctx.strokeStyle = U.rgba(col, 0.13);
+        ctx.lineWidth = bw * (1.25 - pass * 0.15);
+        ctx.beginPath();
+        ctx.arc(cx + (r() - 0.5) * 8, cy + (r() - 0.5) * 8, rad + (r() - 0.5) * 6, Math.PI * 1.02, Math.PI * 1.98);
+        ctx.stroke();
       }
+    });
+    // the legs melt into the haze above the hills
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    var g = ctx.createLinearGradient(0, 640, 0, 1000);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 640, 2048, 360);
+    ctx.fillStyle = 'rgba(0,0,0,1)';
+    ctx.fillRect(0, 999, 2048, 400); // nothing below the hills
+    ctx.restore();
+  };
+
+  // song race: two little birds singing to each other on the long right branch
+  function bird(ctx, c, r, n, x, y, dir, body, breast, seed) {
+    // tail
+    ctx.fillStyle = U.rgba(darker(body, 0.15), 0.85);
+    ctx.beginPath(); ctx.moveTo(x - dir * 14, y + 2); ctx.lineTo(x - dir * 34, y - 6); ctx.lineTo(x - dir * 30, y + 8); ctx.closePath(); ctx.fill();
+    wash(ctx, blob(x, y, 19, 14, n, seed, 0.12, 20), body, 0.9, r, { jitter: 1.5, passes: 3, rim: 1, rimWidth: 4 });
+    wash(ctx, blob(x + dir * 5, y + 5, 11, 8, n, seed + 1, 0.12, 16), breast, 0.85, r, { jitter: 1, passes: 2, rim: 0.6, rimWidth: 3 });
+    wash(ctx, blob(x + dir * 15, y - 11, 10, 10, n, seed + 2, 0.08, 16), body, 0.92, r, { jitter: 1, passes: 3, rim: 1, rimWidth: 3 });
+    ctx.fillStyle = U.rgba(c.ink, 0.85);
+    ctx.beginPath(); ctx.arc(x + dir * 18, y - 13, 1.8, 0, Math.PI * 2); ctx.fill();
+    // open beak: singing
+    ctx.fillStyle = U.rgba(c.ochre, 0.95);
+    ctx.beginPath();
+    ctx.moveTo(x + dir * 24, y - 12); ctx.lineTo(x + dir * 33, y - 15); ctx.lineTo(x + dir * 25, y - 9);
+    ctx.lineTo(x + dir * 32, y - 6); ctx.lineTo(x + dir * 24, y - 8); ctx.closePath(); ctx.fill();
+    // little feet on the branch
+    ctx.strokeStyle = U.rgba(c.trunkDark || c.trunk, 0.8);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x - 3, y + 12); ctx.lineTo(x - 4, y + 19); ctx.moveTo(x + 4, y + 12); ctx.lineTo(x + 5, y + 19); ctx.stroke();
+  }
+  function note(ctx, x, y, s, color, alpha) {
+    ctx.fillStyle = U.rgba(color, alpha);
+    ctx.strokeStyle = U.rgba(color, alpha);
+    ctx.lineWidth = 2.2;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.35);
+    ctx.beginPath(); ctx.ellipse(0, 0, s * 0.55, s * 0.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(x + s * 0.48, y - s * 0.1); ctx.lineTo(x + s * 0.48, y - s * 1.6);
+    ctx.quadraticCurveTo(x + s * 0.9, y - s * 1.3, x + s * 1.1, y - s * 0.9);
+    ctx.stroke();
+  }
+  P.birds = function (ctx, c, r, n) {
+    // perched on the branch from (1115,1000) to (1440,860), facing each other
+    bird(ctx, c, r, n, 1318, 900, 1, c.waterDeep, mix(c.sky, '#ffffff', 0.3), 31);
+    bird(ctx, c, r, n, 1408, 851, -1, mix(c.trunk, c.coral, 0.35), c.coral, 37);
+    note(ctx, 1352, 832, 12, c.ink, 0.45);
+    note(ctx, 1374, 800, 9, c.ink, 0.35);
+  };
+
+  // dinner together: a little table set for two, with a candle
+  P.table = function (ctx, c, r, n) {
+    var x = 830, y = 1398, wood = c.trunk, woodDark = c.trunkDark || c.trunk;
+    taper(ctx, x - 50, y + 10, x - 52, y + 30, x - 56, y + 58, 6, 5, wood, 0.75);
+    taper(ctx, x + 50, y + 10, x + 52, y + 30, x + 56, y + 58, 6, 5, woodDark, 0.75);
+    // a chair on each side
+    [[-128, 1], [128, -1]].forEach(function (ch) {
+      var cx = x + ch[0], d = ch[1];
+      taper(ctx, cx + d * 14, y + 20, cx + d * 14, y + 40, cx + d * 15, y + 58, 5, 4, wood, 0.6);
+      taper(ctx, cx - d * 16, y - 26, cx - d * 17, y, cx - d * 16, y + 58, 5, 4, wood, 0.6);
+      ctx.fillStyle = U.rgba(wood, 0.7);
+      ctx.fillRect(cx - 20, y + 16, 40, 6);
+    });
+    // tablecloth
+    wash(ctx, [[x - 92, y - 8], [x + 92, y - 8], [x + 98, y + 22], [x - 98, y + 22]], '#f6efe6', 0.95, r,
+      { jitter: 2, passes: 3, rim: 0.8, rimWidth: 5, color2: mix('#f6efe6', c.rose, 0.25) });
+    ctx.fillStyle = U.rgba(c.rose, 0.35);
+    ctx.fillRect(x - 96, y + 14, 192, 5);
+    // two plates
+    [-44, 44].forEach(function (dx) {
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
+      ctx.beginPath(); ctx.ellipse(x + dx, y - 6, 24, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = U.rgba(c.sky, 0.8); ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    // candle
+    ctx.fillStyle = 'rgba(250,246,238,0.98)';
+    ctx.fillRect(x - 4, y - 34, 8, 26);
+    spot(ctx, x, y - 44, 34, 34, c.light, 0.55);
+    wash(ctx, blob(x, y - 43, 4, 8, n, 5, 0.1, 12), c.ochre, 0.95, r, { jitter: 1, passes: 2, rim: 0 });
+  };
+
+  // game night: two controllers on the grass
+  function controller(ctx, c, r, x, y, ang, col) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang);
+    var body = [[-30, -12], [30, -12], [38, 2], [36, 16], [24, 18], [14, 8], [-14, 8], [-24, 18], [-36, 16], [-38, 2]];
+    wash(ctx, body, col, 0.9, r, { jitter: 1.5, passes: 3, rim: 1.2, rimWidth: 6, shade: 0.6, shadeTo: 'down' });
+    ctx.fillStyle = 'rgba(250,247,240,0.9)';
+    ctx.fillRect(-25, -3, 13, 4);       // d-pad
+    ctx.fillRect(-20.5, -7.5, 4, 13);
+    [[18, -5], [25, 0]].forEach(function (b) { ctx.beginPath(); ctx.arc(b[0], b[1], 3, 0, Math.PI * 2); ctx.fill(); });
+    ctx.restore();
+  }
+  P.controllers = function (ctx, c, r) {
+    spot(ctx, 965, 1452, 75, 12, darker(c.grass, 0.4), 0.25);
+    controller(ctx, c, r, 940, 1438, -0.18, c.waterDeep);
+    controller(ctx, c, r, 990, 1446, 0.22, c.rose);
+  };
+
+  // something sweet: a little birthday cake with a lit candle
+  P.cake = function (ctx, c, r, n) {
+    var x = 1250, y = 1446;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';                      // plate
+    ctx.beginPath(); ctx.ellipse(x, y, 58, 10, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = U.rgba(c.sky, 0.7); ctx.lineWidth = 1.5; ctx.stroke();
+    wash(ctx, [[x - 42, y - 50], [x + 42, y - 50], [x + 42, y - 4], [x - 42, y - 4]], '#f3dcc6', 0.95, r,
+      { jitter: 1.5, passes: 3, rim: 1, rimWidth: 6, shade: 0.5, shadeTo: 'right' });
+    // pink icing on top, dripping down the sides
+    ctx.fillStyle = U.rgba(c.blossom, 0.95);
+    ctx.beginPath(); ctx.ellipse(x, y - 50, 42, 9, 0, 0, Math.PI * 2); ctx.fill();
+    for (var i = 0; i < 7; i++) {
+      var dx = -36 + i * 12, len = 6 + r() * 12;
+      ctx.beginPath(); ctx.ellipse(x + dx, y - 44 + len / 2, 4, len / 2 + 2, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    for (var k = 0; k < 10; k++) {                                   // sprinkles
+      ctx.fillStyle = U.rgba([c.ochre, c.sky, c.leaf2][k % 3], 0.9);
+      ctx.fillRect(x - 30 + r() * 60, y - 54 + r() * 7, 4, 2);
+    }
+    // candle and flame
+    ctx.fillStyle = U.rgba(c.sky, 0.95);
+    ctx.fillRect(x - 3, y - 80, 6, 28);
+    spot(ctx, x, y - 90, 36, 36, c.light, 0.55);
+    wash(ctx, blob(x, y - 89, 4, 8, n, 9, 0.1, 12), c.ochre, 0.95, r, { jitter: 1, passes: 2, rim: 0 });
+  };
+
+  // real flowers: a small patch of tall tulips on the right hill
+  P.tulips = function (ctx, c, r) {
+    var cols = [c.rose, c.coral, c.blossom, c.ochre, c.rose, c.coral];
+    for (var i = 0; i < 6; i++) {
+      var bx = 1330 + i * 20 + (r() - 0.5) * 8, by = 1420 - (i % 2) * 14, h = 90 + r() * 40;
+      var tx = bx + (r() - 0.5) * 18, ty = by - h, side = i % 2 ? 1 : -1;
+      // leaf
+      ctx.fillStyle = U.rgba(c.leaf, 0.7);
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.quadraticCurveTo(bx + side * 22, by - h * 0.45, bx + side * 6, by - h * 0.6);
+      ctx.quadraticCurveTo(bx, by - h * 0.3, bx, by);
+      ctx.fill();
+      taper(ctx, bx, by, (bx + tx) / 2 + (r() - 0.5) * 10, (by + ty) / 2, tx, ty + 10, 4, 3, c.blade, 0.8);
+      // cup-shaped flower with a notched top
+      wash(ctx, [[tx - 12, ty - 14], [tx - 6, ty - 6], [tx, ty - 16], [tx + 6, ty - 6], [tx + 12, ty - 14],
+        [tx + 13, ty + 4], [tx + 6, ty + 13], [tx - 6, ty + 13], [tx - 13, ty + 4]],
+        cols[i], 0.9, r, { jitter: 1.5, passes: 3, rim: 1.2, rimWidth: 5, shade: 0.6, shadeTo: 'right' });
     }
   };
 
   // How strongly the paper texture shows through each layer.
   var GRAIN = { sky: 0.7, horizon: 0, farHills: 0.9, water: 0.9, nearHills: 1, trunk: 0.8, canopy: 1, grass: 1, flowers: 0.6, petals: 0.6, light: 0,
-    stars: 0.3, sun: 0.6, sunset: 0.6, lights: 0.2, blanket: 0.6, pot: 0.6, books: 0.6, veggies: 0.6 };
+    stars: 0.3, moon: 0.4, rainbow: 0.8, lights: 0.2, birds: 0.5, table: 0.5, controllers: 0.5, cake: 0.5, tulips: 0.6 };
 
   var DEFAULT_COLORS = { skyWarm: '#f1dccb', leafDark: '#557a68', trunkDark: '#6b574b', ink: '#4f4a47' };
 
