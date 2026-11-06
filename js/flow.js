@@ -150,8 +150,6 @@
 
   function openMessage() {
     if (flow.stage !== 'void' || !phone || phone.hit.disabled) return;
-    G.audio.start(); // inside the tap: allowed to make sound now
-    showMute();
     phone.hit.disabled = true;
     phone.hit.remove();
     phone.ph.classList.add('open');
@@ -193,6 +191,10 @@
 
   function toChoices() {
     if (flow.stage !== 'message') return;
+    // The music starts with the choices. This runs inside the "continue" tap,
+    // which is what lets iOS play sound.
+    G.audio.start();
+    showMute();
     clearTimers();
     setStage('choices');
     G.triggers.fire('choicesShown');
@@ -408,6 +410,9 @@
   }
 
   // ---------------------------------------------------------------- sound toggle
+  // Music belongs to every stage from the choices on.
+  function musicStage(stage) { return ['void', 'message'].indexOf(stage) < 0; }
+
   var ICON_ON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path class="wave" d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.6a7.6 7.6 0 0 1 0 10.8"/></svg>';
   var ICON_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z"/><path class="wave" d="M16 9.5l5 5M21 9.5l-5 5"/></svg>';
 
@@ -457,8 +462,8 @@
   flow.ready = function () {
     if (flow.stage === 'void' && phone) phoneReady(false);
     else flow.restore();
-    // Returning visitors: sound starts on their first tap anywhere.
-    if (flow.stage !== 'void') {
+    // Returning visitors past the message: sound starts on their first tap anywhere.
+    if (musicStage(flow.stage)) {
       var first = function () {
         window.removeEventListener('pointerdown', first, true);
         window.removeEventListener('keydown', first, true);
@@ -480,7 +485,7 @@
     if (stage === 'send' && G.state.data.sent) { stage = 'done'; G.state.data.stage = 'done'; G.state.save(); }
     flow.stage = stage;
     document.body.setAttribute('data-stage', stage);
-    if (stage !== 'void') showMute();
+    if (musicStage(stage)) showMute();
     var after = ['letter', 'send', 'done'].indexOf(stage) >= 0;
     if (after || ['choices', 'review', 'bloom'].indexOf(stage) >= 0) G.fx.ambient(cfg, after);
     G.audio.swell(stage === 'bloom' || stage === 'letter');

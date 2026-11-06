@@ -29,7 +29,7 @@
     }, raw.ui);
     cfg.pacing = Object.assign({ messageLineGap: 1.4, typing: 0.9, letterDelay: 1.5, letterLineGap: 1.2, letterPerChar: 0.03 }, raw.pacing);
     cfg.pickHues = Array.isArray(raw.pickHues) && raw.pickHues.length ? raw.pickHues : ['#b7cddb', '#a9c79a', '#e8aab6'];
-    cfg.fx = Object.assign({ petals: 22, ambientPetals: 6, motes: 10, breathe: 0.012, colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
+    cfg.fx = Object.assign({ petals: 22, ambientPetals: 6, motes: 10, breathe: 0.04, colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
     cfg.phoneMessage = Array.isArray(raw.phoneMessage) ? raw.phoneMessage : raw.phoneMessage ? [String(raw.phoneMessage)] : [];
     cfg.letter = Array.isArray(raw.letter) ? raw.letter : raw.letter ? [String(raw.letter)] : [];
     cfg.photo = raw.photo && raw.photo.src ? raw.photo : null;

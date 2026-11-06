@@ -116,6 +116,7 @@
     var sc = document.getElementById('scene');
     if (!amt || U.reducedMotion() || !sc) return;
     sc.style.setProperty('--breathe', String(1 + amt));
+    sc.style.setProperty('--breathe-mid', String(1 + amt * 0.6));
     sc.style.transformOrigin = (cfg.scene.focal[0] * 100) + '% ' + (cfg.scene.focal[1] * 100) + '%';
     sc.classList.add('breathing');
   };
