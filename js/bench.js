@@ -75,7 +75,8 @@
         return Promise.resolve(done('crossfade', 'prefers-reduced-motion'));
       }
       canvas.classList.add('benching');
-      var tiers = ['high', 'medium'];
+      // The benchmark only steps DOWN from perf.bestTier (default medium).
+      var tiers = G.config.perf.bestTier === 'high' ? ['high', 'medium'] : ['medium'];
       function tryTier(i) {
         if (i >= tiers.length) {
           G.scene.setTier('crossfade');

@@ -36,6 +36,7 @@
       out.push('choicesShown');
       var n = i >= 4 ? cfg.picksAllowed : Math.min(data.picks.length, cfg.picksAllowed);
       for (var k = 1; k <= n; k++) out.push('pick' + k);
+      data.picks.forEach(function (id) { out.push('act:' + id); });
     }
     if (i >= 4) out.push('confirmed');
     if (i >= 5) out.push('letterShown');

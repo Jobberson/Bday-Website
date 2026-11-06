@@ -140,7 +140,8 @@
   }
 
   function ensureSketch(L) {
-    if (!L.sketch && L.color) L.sketch = makeSketch(L);
+    // Layers that never show a sketch (sketchOn: null) don't need one.
+    if (!L.sketch && L.color && (L.def.sketchOn || L.sketchSrc)) L.sketch = makeSketch(L);
   }
 
   function prepareLayer(L) {
@@ -160,7 +161,7 @@
       U.warn('could not draw layer "' + L.id + '"', e);
     }
     L.color = c;
-    if (!fullyColored(L)) L.sketch = makeSketch(L);
+    if (!fullyColored(L)) ensureSketch(L);
   }
 
   // ---------------------------------------------------------------- reveal stamps

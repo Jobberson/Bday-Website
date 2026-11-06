@@ -25,11 +25,11 @@
       reviewHeading: 'Your day', changeSomething: 'change something', confirm: 'confirm',
       summaryHeading: 'Your birthday', summaryIntro: '', send: 'send', sending: 'sending…', sent: 'sent',
       sendFailed: "The message didn't go through. Please take a screenshot of this.", tryAgain: 'try again',
-      muteOn: 'Sound on', muteOff: 'Sound off'
+      replay: 'watch it bloom again', muteOn: 'Sound on', muteOff: 'Sound off'
     }, raw.ui);
     cfg.pacing = Object.assign({ messageLineGap: 1.4, typing: 0.9, letterDelay: 1.5, letterLineGap: 1.2, letterPerChar: 0.03 }, raw.pacing);
     cfg.pickHues = Array.isArray(raw.pickHues) && raw.pickHues.length ? raw.pickHues : ['#b7cddb', '#a9c79a', '#e8aab6'];
-    cfg.fx = Object.assign({ petals: 22, colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
+    cfg.fx = Object.assign({ petals: 22, ambientPetals: 6, motes: 10, colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
     cfg.phoneMessage = Array.isArray(raw.phoneMessage) ? raw.phoneMessage : raw.phoneMessage ? [String(raw.phoneMessage)] : [];
     cfg.letter = Array.isArray(raw.letter) ? raw.letter : raw.letter ? [String(raw.letter)] : [];
     cfg.photo = raw.photo && raw.photo.src ? raw.photo : null;
@@ -40,7 +40,7 @@
       sketchLighten: 0.42, sketchDuration: 2.6, drainSlowdown: 1.35, crossfadeDuration: 3
     }, raw.reveal);
     cfg.reveal.maskScale = U.clamp(num(cfg.reveal.maskScale, 0.5), 0.1, 1);
-    cfg.perf = Object.assign({ maxDpr: 1.5, maxCanvasPixels: 2000000, maxLoadWait: 15, assetTimeout: 12 }, raw.perf);
+    cfg.perf = Object.assign({ bestTier: 'medium', maxDpr: 1.5, maxCanvasPixels: 2000000, maxLoadWait: 15, assetTimeout: 12 }, raw.perf);
     cfg.paper = Object.assign({ grainOpacity: 0.55, grainSize: 220 }, raw.paper);
     cfg.palette = Object.assign({}, raw.palette);
     cfg.stagePaperTint = Object.assign({}, raw.stagePaperTint);
@@ -54,11 +54,17 @@
     // Trigger list, in story order.
     var triggers = ['start', 'messageOpened', 'choicesShown'];
     for (var k = 1; k <= cfg.picksAllowed; k++) triggers.push('pick' + k);
+    // One trigger per activity, fired while that activity is chosen: act:<id>.
+    cfg.activities.forEach(function (a) { triggers.push('act:' + a.id); });
     triggers.push('confirmed', 'letterShown', 'sent');
     cfg.triggers = triggers;
 
     function remap(t, field, id) {
       if (t === null || t === undefined || t === '') return field === 'colorOn' ? 'confirmed' : null;
+      if (/^act:/.test(t) && triggers.indexOf(t) < 0) {
+        U.warn('layer "' + id + '": no activity with id "' + t.slice(4) + '"; this layer will stay hidden');
+        return 'never';
+      }
       var m = /^pick(\d+)$/.exec(t);
       if (m && +m[1] > cfg.picksAllowed) return 'confirmed';
       if (triggers.indexOf(t) < 0) {

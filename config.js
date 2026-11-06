@@ -25,8 +25,9 @@ window.GARDEN_CONFIG = {
   // Colour washed into a card when it is chosen, by pick order (matches the garden hues).
   pickHues: ['#b7cddb', '#a9c79a', '#e8aab6'],
 
-  // Falling petals during the final bloom. petals: 0 turns them off.
-  fx: { petals: 22, colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4'] },
+  // Falling petals during the final bloom, then a gentle loop of drifting petals and
+  // floating specks of light from the letter on. Set any number to 0 to turn it off.
+  fx: { petals: 22, ambientPetals: 6, motes: 10, colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4'] },
 
   // ---------------------------------------------------------------- words
   phoneMessage: [
@@ -103,6 +104,7 @@ window.GARDEN_CONFIG = {
     sent: 'sent',
     sendFailed: "The message didn't go through. Could you take a screenshot of this and send it to me?",
     tryAgain: 'try again',
+    replay: 'watch it bloom again', // shown under the closing line; '' hides it
     muteOn: 'Sound on',
     muteOff: 'Sound off',
     loadingHint: ''
@@ -155,7 +157,8 @@ window.GARDEN_CONFIG = {
   },
 
   perf: {
-    maxDpr: 1.5,              // cap on device pixel ratio for the scene canvas
+    bestTier: 'medium',       // best quality allowed: 'medium' (smoothest) or 'high' (sharper)
+    maxDpr: 1.5,             // cap on device pixel ratio for the scene canvas
     maxCanvasPixels: 2000000, // cap on total scene canvas pixels (big desktops)
     maxLoadWait: 15,          // seconds; the phone becomes tappable after this regardless
     assetTimeout: 12          // seconds per asset before it counts as failed
@@ -167,6 +170,7 @@ window.GARDEN_CONFIG = {
     ink: '#4f4a47',
     skyTop: '#8fb1c9',
     sky: '#b7cddb',
+    skyWarm: '#f1dccb',
     water: '#7ea3bd',
     waterDeep: '#5f86a6',
     hillFar: '#9fb5b5',
@@ -176,9 +180,11 @@ window.GARDEN_CONFIG = {
     leaf: '#7fa58a',
     leaf2: '#93b58f',
     leaf3: '#6a917d',
+    leafDark: '#557a68',
     grass: '#a9c79a',
     blade: '#7a9e82',
     trunk: '#8a7466',
+    trunkDark: '#6b574b',
     rose: '#d99aa0',
     coral: '#e4a58e',
     ochre: '#e2bd73',
@@ -199,28 +205,47 @@ window.GARDEN_CONFIG = {
       brush        'auto', or an index into `brushes`
       blend        'multiply' (paint), 'normal', 'screen', 'soft-light'…
       opacity      0–1
-    Triggers: start, messageOpened, choicesShown, pick1…pickN, confirmed, letterShown, sent
+    Triggers: start, messageOpened, choicesShown, pick1…pickN, confirmed, letterShown, sent,
+    and act:<activity id> (fires while that activity is chosen; drains if she lets it go).
     Pick triggers above picksAllowed automatically move to 'confirmed'.
+    The act: layers are small details tied to each activity; they have no sketch, so they
+    only appear in the garden if she chooses that activity.
   */
   layers: [
     { id: 'sky',       image: 'placeholder:sky',       sketchOn: 'choicesShown', colorOn: 'pick1',
       delay: 0,   duration: 6,   origin: [1180, 300],  brush: 'auto', blend: 'multiply' },
+    { id: 'stars',     image: 'placeholder:stars',     sketchOn: null, colorOn: 'act:stars',
+      delay: 1.2, duration: 3.5, origin: [1000, 400],  brush: 'auto', blend: 'normal' },
+    { id: 'sun',       image: 'placeholder:sun',       sketchOn: null, colorOn: 'act:breakfast',
+      delay: 1.2, duration: 3,   origin: [700, 330],   brush: 'auto', blend: 'normal' },
     { id: 'horizon',   image: 'placeholder:horizon',   sketchOn: 'messageOpened', colorOn: 'confirmed',
       delay: 0,   duration: 4,   origin: [1024, 1085], brush: 'auto', blend: 'multiply', sketchDuration: 3.5 },
     { id: 'farHills',  image: 'placeholder:farHills',  sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 0,   duration: 5,   origin: [700, 1000],  brush: 'auto', blend: 'multiply', sketchDelay: 0.3 },
     { id: 'water',     image: 'placeholder:water',     sketchOn: 'choicesShown', colorOn: 'pick1',
       delay: 1.4, duration: 5,   origin: [900, 1160],  brush: 'auto', blend: 'multiply', sketchDelay: 0.5 },
+    { id: 'sunset',    image: 'placeholder:sunset',    sketchOn: null, colorOn: 'act:sunset',
+      delay: 1.2, duration: 4,   origin: [1500, 1080], brush: 'auto', blend: 'normal' },
     { id: 'nearHills', image: 'placeholder:nearHills', sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 1.0, duration: 5.5, origin: [520, 1500],  brush: 'auto', blend: 'multiply', sketchDelay: 0.7 },
     { id: 'trunk',     image: 'placeholder:trunk',     sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 0,   duration: 4,   origin: [1100, 1400], brush: 'auto', blend: 'multiply', sketchDelay: 0.5 },
     { id: 'canopy',    image: 'placeholder:canopy',    sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 3.0, duration: 5,   origin: [1110, 640],  brush: 'auto', blend: 'multiply', sketchDelay: 1.1 },
+    { id: 'lights',    image: 'placeholder:lights',    sketchOn: null, colorOn: 'act:movies',
+      delay: 1.2, duration: 3,   origin: [1120, 700],  brush: 'auto', blend: 'normal' },
     { id: 'grass',     image: 'placeholder:grass',     sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 3.0, duration: 5,   origin: [1024, 1700], brush: 'auto', blend: 'multiply', sketchDelay: 1.3 },
     { id: 'flowers',   image: 'placeholder:flowers',   sketchOn: 'choicesShown', colorOn: 'pick3',
       delay: 0,   duration: 5,   origin: 'fromCard',   brush: 'auto', blend: 'normal', sketchDelay: 1.5 },
+    { id: 'blanket',   image: 'placeholder:blanket',   sketchOn: null, colorOn: 'act:picnic',
+      delay: 1.2, duration: 2.5, origin: [830, 1410],  brush: 'auto', blend: 'normal' },
+    { id: 'pot',       image: 'placeholder:pot',       sketchOn: null, colorOn: 'act:pottery',
+      delay: 1.2, duration: 2.5, origin: [1000, 1400], brush: 'auto', blend: 'normal' },
+    { id: 'books',     image: 'placeholder:books',     sketchOn: null, colorOn: 'act:books',
+      delay: 1.2, duration: 2.5, origin: [1240, 1420], brush: 'auto', blend: 'normal' },
+    { id: 'veggies',   image: 'placeholder:veggies',   sketchOn: null, colorOn: 'act:cook',
+      delay: 1.2, duration: 2.5, origin: [1360, 1330], brush: 'auto', blend: 'normal' },
     { id: 'petals',    image: 'placeholder:petals',    sketchOn: 'choicesShown', colorOn: 'pick3',
       delay: 1.5, duration: 5,   origin: [1110, 600],  brush: 'auto', blend: 'normal', sketchDelay: 1.7 },
     { id: 'light',     image: 'placeholder:light',     sketchOn: null,           colorOn: 'pick3',

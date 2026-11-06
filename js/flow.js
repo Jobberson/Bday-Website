@@ -81,6 +81,7 @@
     d.picks.push(id);
     G.state.save();
     G.triggers.firePick({ origin: origin });
+    G.triggers.fire('act:' + id, { origin: origin }); // this activity's own detail in the garden
     return true;
   };
   flow.unchoose = function (id) {
@@ -89,6 +90,7 @@
     d.picks.splice(i, 1);
     G.state.save();
     G.triggers.undoLastPick(); // the garden always reflects how many are chosen
+    G.triggers.undo('act:' + id);
     return true;
   };
 
@@ -252,6 +254,7 @@
   function toLetter() {
     setStage('letter');
     G.triggers.fire('letterShown');
+    G.fx.ambient(cfg);
     showLetter(false);
   }
 
@@ -349,11 +352,54 @@
   }
 
   function showDone(instant) {
+    var again = ui.replay ? el('button', { type: 'button', class: 'btn quiet replay', text: ui.replay, on: { click: replay } }) : null;
     var node = el('section', { class: 'stage stage-done' }, [
-      el('p', { class: 'closing', tabindex: '-1', 'data-focus': '', text: fill(cfg.closingLine) })
+      el('div', { class: 'done-box' }, [
+        el('p', { class: 'closing', tabindex: '-1', 'data-focus': '', text: fill(cfg.closingLine) }),
+        again
+      ])
     ]);
     show(node, instant);
     focusIn(node);
+  }
+
+  // "watch it bloom again": replays the garden from the blank page with her picks.
+  // Only the picture replays; nothing is saved or sent again.
+  function replay() {
+    if (flow.stage !== 'done' || flow.replaying) return;
+    flow.replaying = true;
+    clearTimers();
+    G.fx.stop();
+    show(null);
+    // Fade the finished garden away, then start again from the blank page.
+    var canvas = document.getElementById('scene');
+    canvas.style.opacity = '0';
+    timers.push(setTimeout(function () {
+      G.triggers.applyInstant(['start']);
+      canvas.style.opacity = '';
+    }, 1500));
+    var seq = [['messageOpened', 1.6 * G.speed + 1.4], ['choicesShown', 2.6]];
+    flow.picks().forEach(function (id, i) { seq.push(['pick', i ? 4 : 3.4, id]); });
+    seq.push(['confirmed', 4.5]);
+    var t = 0;
+    seq.forEach(function (s) {
+      t += s[1];
+      later(function () {
+        if (s[0] === 'pick') { G.triggers.firePick({}); G.triggers.fire('act:' + s[2]); return; }
+        G.triggers.fire(s[0]);
+        if (s[0] === 'confirmed') G.fx.petals(cfg);
+      }, t);
+    });
+    function finish() {
+      if (!flow.replaying) return;
+      if (G.triggers.busy()) { timers.push(setTimeout(finish, 300)); return; }
+      G.triggers.fire('letterShown');
+      G.triggers.fire('sent');
+      flow.replaying = false;
+      G.fx.ambient(cfg);
+      showDone(false);
+    }
+    later(finish, t + 1);
   }
 
   // ---------------------------------------------------------------- sound toggle
@@ -423,11 +469,14 @@
   flow.restore = function () {
     clearTimers();
     G.fx.stop();
+    flow.replaying = false;
+    document.getElementById('scene').style.opacity = '';
     var stage = G.state.data.stage;
     if (stage === 'send' && G.state.data.sent) { stage = 'done'; G.state.data.stage = 'done'; G.state.save(); }
     flow.stage = stage;
     document.body.setAttribute('data-stage', stage);
     if (stage !== 'void') showMute();
+    if (['letter', 'send', 'done'].indexOf(stage) >= 0) G.fx.ambient(cfg);
     phone = null;
     switch (stage) {
       case 'void': show(buildPhone(false), true); phoneReady(true); break;

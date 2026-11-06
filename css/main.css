@@ -430,6 +430,16 @@ html, body {
   transition: opacity 2.4s ease, filter 2.6s ease;
 }
 .stage-done.in .closing { opacity: 1; filter: none; }
+.done-box { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+.btn.replay {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--ink);
+  text-shadow: 0 0 10px rgba(251, 248, 242, 0.95);
+  opacity: 0;
+  transition: opacity 1.6s ease 3s;
+}
+.stage-done.in .btn.replay { opacity: 0.75; }
 
 /* ---------------------------------------------------------------- sound toggle */
 .mute {
@@ -470,6 +480,24 @@ html, body {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
+}
+.petals.ambient { opacity: 0; transition: opacity 4s ease; }
+.petals.ambient.on { opacity: 1; }
+.mote {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 200, 0.95) 0%, rgba(255, 220, 170, 0.5) 40%, rgba(255, 220, 170, 0) 70%);
+  animation-name: drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  will-change: transform, opacity;
+}
+@keyframes drift {
+  0% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0; }
+  30% { opacity: 0.85; }
+  70% { opacity: 0.6; }
+  100% { transform: translate3d(var(--dx), var(--dy), 0) scale(1.15); opacity: 0; }
 }
 @keyframes sway {
   from { transform: translateX(calc(var(--sway) * -1)) rotate(0deg); }
