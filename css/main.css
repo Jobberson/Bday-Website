@@ -39,6 +39,12 @@ html, body {
   opacity: 1;
   transition: opacity 1.4s ease;
 }
+/* The garden breathes: a slow, tiny zoom (moved by the GPU, the canvas isn't redrawn). */
+#scene.breathing { animation: gardenBreathe 26s ease-in-out infinite; will-change: transform; }
+@keyframes gardenBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(var(--breathe, 1.012)) translateY(-0.25%); }
+}
 /* Hidden benchmark: still rendered and composited, but invisible. */
 #scene.benching { opacity: 0.001; transition: none; }
 

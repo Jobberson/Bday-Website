@@ -196,6 +196,7 @@
     clearTimers();
     setStage('choices');
     G.triggers.fire('choicesShown');
+    G.fx.ambient(cfg, false); // the garden starts breathing as soon as it appears
     phone = null;
     showChoices(false);
   }
@@ -237,6 +238,7 @@
     show(null);
     G.triggers.fire('confirmed');
     G.fx.petals(cfg);
+    G.audio.swell(true);
     afterBloom();
   }
 
@@ -254,7 +256,7 @@
   function toLetter() {
     setStage('letter');
     G.triggers.fire('letterShown');
-    G.fx.ambient(cfg);
+    G.fx.ambient(cfg, true); // drifting petals join after the bloom
     showLetter(false);
   }
 
@@ -303,6 +305,7 @@
   function toSend() {
     if (flow.stage !== 'letter') return;
     clearTimers();
+    G.audio.swell(false);
     setStage('send');
     showSend(false);
   }
@@ -387,7 +390,8 @@
       later(function () {
         if (s[0] === 'pick') { G.triggers.firePick({}); G.triggers.fire('act:' + s[2]); return; }
         G.triggers.fire(s[0]);
-        if (s[0] === 'confirmed') G.fx.petals(cfg);
+        if (s[0] === 'choicesShown') G.fx.ambient(cfg, false);
+        if (s[0] === 'confirmed') { G.fx.petals(cfg); G.audio.swell(true); }
       }, t);
     });
     function finish() {
@@ -396,7 +400,8 @@
       G.triggers.fire('letterShown');
       G.triggers.fire('sent');
       flow.replaying = false;
-      G.fx.ambient(cfg);
+      G.audio.swell(false);
+      G.fx.ambient(cfg, true);
       showDone(false);
     }
     later(finish, t + 1);
@@ -476,7 +481,9 @@
     flow.stage = stage;
     document.body.setAttribute('data-stage', stage);
     if (stage !== 'void') showMute();
-    if (['letter', 'send', 'done'].indexOf(stage) >= 0) G.fx.ambient(cfg);
+    var after = ['letter', 'send', 'done'].indexOf(stage) >= 0;
+    if (after || ['choices', 'review', 'bloom'].indexOf(stage) >= 0) G.fx.ambient(cfg, after);
+    G.audio.swell(stage === 'bloom' || stage === 'letter');
     phone = null;
     switch (stage) {
       case 'void': show(buildPhone(false), true); phoneReady(true); break;

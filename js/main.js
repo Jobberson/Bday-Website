@@ -74,6 +74,7 @@
       return G.bench.run();
     }).then(function () {
       G.triggers.applyInstant(G.state.triggersFor(cfg, G.state.data));
+      G.fx.breathe(cfg);
       G.ready = true;
       emit('garden:ready');
       G.flow.ready();

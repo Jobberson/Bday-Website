@@ -25,9 +25,14 @@ window.GARDEN_CONFIG = {
   // Colour washed into a card when it is chosen, by pick order (matches the garden hues).
   pickHues: ['#b7cddb', '#a9c79a', '#e8aab6'],
 
-  // Falling petals during the final bloom, then a gentle loop of drifting petals and
-  // floating specks of light from the letter on. Set any number to 0 to turn it off.
-  fx: { petals: 22, ambientPetals: 6, motes: 10, colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4'] },
+  // Life in the garden. Set any number to 0 to turn that part off.
+  fx: {
+    petals: 22,        // falling during the final bloom
+    ambientPetals: 6,  // drifting forever after the bloom
+    motes: 10,         // specks of warm light floating, from the moment the garden appears
+    breathe: 0.012,    // the whole garden slowly zooms in and out by this much (1.2%), always
+    colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4']
+  },
 
   // ---------------------------------------------------------------- words
   phoneMessage: [
@@ -49,8 +54,17 @@ window.GARDEN_CONFIG = {
 
   // Optional. Set to null to hide.
   photo: null, // { src: 'assets/images/us.webp', alt: 'The two of us', caption: 'us, last summer' }
-  // Optional. Set to null to hide the mute toggle.
-  music: null, // { src: 'assets/audio/theme.mp3', volume: 0.6, fadeIn: 3, fadeOut: 1.5 }
+  // Optional. Set to null for no music (the sound toggle is hidden too).
+  music: {
+    src: 'assets/audio/el-descanso.m4a',
+    volume: 0.6,       // 0–1
+    fadeIn: 4,         // seconds, after her first tap
+    fadeOut: 1.5,      // seconds, when she leaves the tab
+    loopStart: 0,      // seconds: where each repeat starts…
+    loopEnd: 35,       // …and where it jumps back (the song is exactly 35 s)
+    loopCrossfade: 0,  // seconds of overlap at the loop point (0 = seamless cut)
+    swell: 0.25        // 25% louder during the final bloom and the letter (0 = off)
+  },
 
   activities: [
     { id: 'breakfast', title: 'Breakfast in bed',

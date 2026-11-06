@@ -1,0 +1,2 @@
+# Source audio exports (the site uses the compressed .m4a)
+assets/audio/*.wav
