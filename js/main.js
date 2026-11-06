@@ -54,6 +54,7 @@
     var canvas = document.getElementById('scene');
     G.scene.init(canvas, cfg);
     G.triggers.init(cfg);
+    G.flow.init(cfg); // draws the faint phone right away; it inks in as loading progresses
 
     var load = G.loader.start(cfg, function (p) {
       G.loadProgress = p;
@@ -75,6 +76,7 @@
       G.triggers.applyInstant(G.state.triggersFor(cfg, G.state.data));
       G.ready = true;
       emit('garden:ready');
+      G.flow.ready();
       if (U.flags.debug) G.debug.init();
     });
   }

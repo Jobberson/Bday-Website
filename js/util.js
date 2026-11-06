@@ -128,6 +128,31 @@
     console.warn.apply(console, args);
   };
 
+  // Tiny DOM builder: el('p', { class: 'x', text: 'hi', on: { click: fn } }, [children]).
+  U.el = function (tag, attrs, kids) {
+    var e = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'text') e.textContent = v;
+      else if (k === 'on') Object.keys(v).forEach(function (ev) { e.addEventListener(ev, v[ev]); });
+      else if (k === 'style') Object.keys(v).forEach(function (p) { e.style.setProperty(p, v[p]); });
+      else e.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) {
+      if (c === null || c === undefined || c === false) return;
+      e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    });
+    return e;
+  };
+
+  // '{n} left' + {n: 2} -> '2 left'. Unknown {keys} are left as they are.
+  U.fill = function (s, vars) {
+    return String(s == null ? '' : s).replace(/\{(\w+)\}/g, function (m, k) {
+      return vars && vars[k] !== undefined ? String(vars[k]) : m;
+    });
+  };
+
   U.wait = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
   U.nextFrame = function () { return new Promise(function (r) { requestAnimationFrame(r); }); };
 })();

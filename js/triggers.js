@@ -55,10 +55,24 @@
 
   trig.isFired = function (name) { return trig.fired.indexOf(name) >= 0; };
 
+  // True while any reveal is scheduled or still painting.
+  trig.busy = function () {
+    if (pending.length) return true;
+    return G.scene.layers().some(function (l) { var s = G.scene.layerState(l.id); return s && s.animating; });
+  };
+
   // opts.origin: [x, y] screen CSS px (used by 'fromCard' layers)
   // opts.forceOrigin: [x, y] screen CSS px for every layer (debug)
   trig.fire = function (name, opts) {
     if (trig.isFired(name)) return false;
+    // Confirming with fewer picks than allowed: the unused picks bloom with the finale,
+    // so the garden always ends fully colored.
+    if (name === 'confirmed') {
+      trig.autoPicks = [];
+      for (var k = trig.pickCount() + 1; k <= cfg.picksAllowed; k++) {
+        if (trig.fire('pick' + k, {})) trig.autoPicks.push('pick' + k);
+      }
+    }
     trig.fired.push(name);
     var t = G.paper.tintFor(cfg, name);
     if (t) G.scene.setTint(t, 2.5);
@@ -90,6 +104,10 @@
         G.scene.startSketch(def.index, -1);
       }
     });
+    if (name === 'confirmed') {
+      (trig.autoPicks || []).forEach(function (p) { trig.undo(p); });
+      trig.autoPicks = [];
+    }
     G.scene.setTint(G.paper.tintForFired(cfg, trig.fired), 2.5);
     emit('undo', name);
     return true;
@@ -114,6 +132,7 @@
   // Jump straight to the state implied by a list of fired triggers (restore / debug).
   trig.applyInstant = function (list) {
     pending = [];
+    trig.autoPicks = [];
     trig.fired = list.slice();
     cfg.layers.forEach(function (def) {
       var sk = def.sketchOn && list.indexOf(def.sketchOn) >= 0 ? 1 : 0;

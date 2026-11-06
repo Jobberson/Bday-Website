@@ -48,6 +48,7 @@
     G.state.data = { stage: stage, picks: picks, sent: i >= 7 };
     G.state.save();
     G.triggers.applyInstant(G.state.triggersFor(cfg, G.state.data));
+    G.flow.restore();
   }
 
   function speedRow() {
@@ -80,12 +81,17 @@
     var avgDt = dts.length ? dts.reduce(function (a, b) { return a + b; }, 0) / dts.length : 0;
     var avgCpu = cpus.length ? cpus.reduce(function (a, b) { return a + b; }, 0) / cpus.length : 0;
     var maxDt = dts.length ? Math.max.apply(null, dts) : 0;
+    // Dropped frames: frames that took clearly longer than the screen's normal frame time.
+    var sorted = dts.slice().sort(function (p, q) { return p - q; });
+    var typical = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+    var dropped = dts.filter(function (d) { return d > typical * 1.6; }).length;
     var b = G.bench.result || {};
     var bt = (b.tests || []).map(function (t) {
       return '  ' + t.tier + ': cpu ' + t.cpuMed + '/' + t.cpuP90 + 'ms, frame ' + t.dtMed + '/' + t.dtP90 + 'ms' + (t.capped30 ? ' [30fps cap]' : '') + (t.ok ? ' ok' : ' slow');
     }).join('\n');
     statsEl.textContent =
       'fps (last anim) ' + (avgDt ? (1000 / avgDt).toFixed(0) : '–') + '  worst ' + maxDt.toFixed(1) + 'ms\n' +
+      'dropped frames ' + dropped + ' of last ' + dts.length + '\n' +
       'draw cpu ' + avgCpu.toFixed(2) + 'ms  (last ' + s.lastCpu.toFixed(2) + ')\n' +
       'canvas ' + info.W + '×' + info.H + ' @' + info.eff.toFixed(2) + '  mask ' + info.mW + '×' + info.mH + '\n' +
       'tier ' + info.tier + ' (' + (b.reason || '') + ')\n' + (bt ? bt + '\n' : '') +
@@ -135,7 +141,7 @@
       section('Origin', [el('label', { class: 'row', for: 'dbg-tap' }, [tapBox, el('span', { text: ' use tap as paint origin ' }), tapLabel])]),
       section('Stage', [el('div', { class: 'row' }, [stageSel,
         btn('jump', function () { jumpStage(stageSel.value); refreshTriggers(); }),
-        btn('reset all', function () { cancelReplay(); G.state.clear(); G.triggers.reset(); refreshTriggers(); })])]),
+        btn('reset all', function () { cancelReplay(); G.state.clear(); G.triggers.reset(); G.flow.restore(); refreshTriggers(); })])]),
       section('Quality tier', [el('div', { class: 'row' }, ['high', 'medium', 'crossfade'].map(function (t) {
         return btn(t, function () { G.scene.setTier(t); });
       }))]),

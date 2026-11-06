@@ -8,7 +8,25 @@
 window.GARDEN_CONFIG = {
   herName: 'Cele',
   picksAllowed: 3,
+  // false: "see my day" appears after her first pick (unused picks bloom at the end).
+  // true: she has to choose all of them first.
+  requireAllPicks: false,
   speed: 1,
+
+  // Pacing of the words (seconds, also divided by `speed`).
+  pacing: {
+    messageLineGap: 1.4,  // between chat bubbles on the phone
+    typing: 0.9,          // the "…" before each bubble
+    letterDelay: 1.5,     // pause after the final bloom settles, before the letter
+    letterLineGap: 1.2,   // base time between letter lines (longer lines wait a little more)
+    letterPerChar: 0.03   // extra seconds per character of the previous line
+  },
+
+  // Colour washed into a card when it is chosen, by pick order (matches the garden hues).
+  pickHues: ['#b7cddb', '#a9c79a', '#e8aab6'],
+
+  // Falling petals during the final bloom. petals: 0 turns them off.
+  fx: { petals: 22, colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4'] },
 
   // ---------------------------------------------------------------- words
   phoneMessage: [
@@ -65,7 +83,9 @@ window.GARDEN_CONFIG = {
     pageTitle: "Cele's birthday garden",
     newMessage: '1 new message',
     openMessage: 'Open message',
+    messageFrom: 'Pedro',
     continue: 'continue',
+    chosen: 'chosen',
     picksLeft: '{n} left to choose',
     pickLeftOne: '1 left to choose',
     picksDone: 'all chosen',
@@ -77,9 +97,12 @@ window.GARDEN_CONFIG = {
     changeSomething: 'change something',
     confirm: 'confirm',
     summaryHeading: "Cele's birthday",
+    summaryIntro: 'what you chose:',
     send: 'send',
     sending: 'sending…',
+    sent: 'sent',
     sendFailed: "The message didn't go through. Could you take a screenshot of this and send it to me?",
+    tryAgain: 'try again',
     muteOn: 'Sound on',
     muteOff: 'Sound off',
     loadingHint: ''
@@ -122,7 +145,7 @@ window.GARDEN_CONFIG = {
   reveal: {
     maskScale: 0.5,        // mask resolution relative to the screen (lower = softer + faster)
     stamps: 70,            // brush stamps per reveal (more = finer spread)
-    wetEdge: true,         // darker rim on the spreading front
+    wetEdge: false,        // darker rim on fresh paint (subtle shimmer; costs extra GPU work)
     wetStrength: 0.35,
     sketchOpacity: 0.45,   // how visible the grey sketch is
     sketchLighten: 0.5,    // how much the auto sketch is lightened (0–1)

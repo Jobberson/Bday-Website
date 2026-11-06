@@ -16,7 +16,24 @@
     var cfg = Object.assign({}, raw);
     cfg.picksAllowed = Math.max(1, Math.round(num(raw.picksAllowed, 3)));
     cfg.speed = Math.max(0.05, num(raw.speed, 1));
-    cfg.ui = Object.assign({}, raw.ui);
+    cfg.herName = raw.herName || '';
+    cfg.requireAllPicks = !!raw.requireAllPicks;
+    cfg.ui = Object.assign({
+      newMessage: '1 new message', openMessage: 'Open message', messageFrom: '', continue: 'continue',
+      chosen: 'chosen', picksLeft: '{n} left to choose', pickLeftOne: '1 left to choose', picksDone: 'all chosen',
+      choose: 'choose this', unchoose: 'let this go', close: 'close', seeMyDay: 'see my day',
+      reviewHeading: 'Your day', changeSomething: 'change something', confirm: 'confirm',
+      summaryHeading: 'Your birthday', summaryIntro: '', send: 'send', sending: 'sending…', sent: 'sent',
+      sendFailed: "The message didn't go through. Please take a screenshot of this.", tryAgain: 'try again',
+      muteOn: 'Sound on', muteOff: 'Sound off'
+    }, raw.ui);
+    cfg.pacing = Object.assign({ messageLineGap: 1.4, typing: 0.9, letterDelay: 1.5, letterLineGap: 1.2, letterPerChar: 0.03 }, raw.pacing);
+    cfg.pickHues = Array.isArray(raw.pickHues) && raw.pickHues.length ? raw.pickHues : ['#b7cddb', '#a9c79a', '#e8aab6'];
+    cfg.fx = Object.assign({ petals: 22, colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
+    cfg.phoneMessage = Array.isArray(raw.phoneMessage) ? raw.phoneMessage : raw.phoneMessage ? [String(raw.phoneMessage)] : [];
+    cfg.letter = Array.isArray(raw.letter) ? raw.letter : raw.letter ? [String(raw.letter)] : [];
+    cfg.photo = raw.photo && raw.photo.src ? raw.photo : null;
+    cfg.music = raw.music && raw.music.src ? raw.music : null;
     cfg.scene = Object.assign({ size: 2048, focal: [0.5, 0.42], safeArea: [900, 1100] }, raw.scene);
     cfg.reveal = Object.assign({
       maskScale: 0.5, stamps: 70, wetEdge: true, wetStrength: 0.35, sketchOpacity: 0.55,
@@ -28,7 +45,10 @@
     cfg.palette = Object.assign({}, raw.palette);
     cfg.stagePaperTint = Object.assign({}, raw.stagePaperTint);
     cfg.brushes = Array.isArray(raw.brushes) ? raw.brushes.filter(Boolean) : [];
-    cfg.activities = Array.isArray(raw.activities) ? raw.activities : [];
+    cfg.activities = (Array.isArray(raw.activities) ? raw.activities : []).filter(function (a, i) {
+      if (!a || !a.id || !a.title) { U.warn('activity #' + (i + 1) + ' needs an id and a title; skipped'); return false; }
+      return true;
+    });
     cfg.email = Object.assign({ web3formsAccessKey: '', subject: 'Birthday picks' }, raw.email);
 
     // Trigger list, in story order.
