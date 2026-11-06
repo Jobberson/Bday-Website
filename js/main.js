@@ -10,7 +10,8 @@
   G.ready = false;
   if (cfg.ui.pageTitle) document.title = cfg.ui.pageTitle;
 
-  if (U.flags.reset) {
+  // Every reload starts over unless config.rememberProgress is on.
+  if (U.flags.reset || !cfg.rememberProgress) {
     G.state.clear();
     // Drop ?reset from the address bar so a later reload keeps progress.
     try {

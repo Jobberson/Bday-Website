@@ -102,6 +102,10 @@
     '<path class="detail" pathLength="1" d="M82 381H118"/>' +
     '</svg>';
 
+  // VOID begins with one tap on the blank paper ("turn your sound on…"), because
+  // browsers only allow sound after a tap. Then the phone appears and buzzes.
+  var begun = false, isReady = false;
+
   function buildPhone(open) {
     var notif = el('p', { class: 'notif' }, [el('span', { class: 'dot', 'aria-hidden': 'true' }), ui.newMessage]);
     var thread = el('div', { class: 'thread', 'aria-live': 'polite' });
@@ -116,10 +120,37 @@
     body.insertAdjacentHTML('afterbegin', PHONE_SVG);
     var hit = el('button', { type: 'button', class: 'phone-hit', 'aria-label': ui.openMessage + ' (' + ui.newMessage + ')', disabled: true, 'data-focus': '' });
     hit.addEventListener('click', openMessage);
-    var ph = el('div', { class: 'phone' + (open ? ' open' : '') }, [body, open ? null : hit]);
-    var node = el('section', { class: 'stage stage-phone' }, [ph]);
-    phone = { node: node, ph: ph, hit: hit, thread: thread, cont: cont, ink: body.querySelectorAll('path'), shown: 0 };
+    var asleep = !open && !begun;
+    var ph = el('div', { class: 'phone' + (open ? ' open' : '') + (asleep ? ' asleep' : '') }, [body, open ? null : hit]);
+    var begin = asleep ? el('button', { type: 'button', class: 'begin', 'data-focus': '', on: { click: onBegin } }, [
+      el('span', { text: ui.tapToBegin })
+    ]) : null;
+    var node = el('section', { class: 'stage stage-phone' }, [begin, ph]);
+    phone = { node: node, ph: ph, hit: hit, begin: begin, thread: thread, cont: cont, ink: body.querySelectorAll('path'), shown: 0 };
     return node;
+  }
+
+  function onBegin() {
+    if (begun || !phone) return;
+    begun = true;
+    G.audio.unlockBuzz(); // inside the tap: the buzz may play from now on
+    var b = phone.begin;
+    b.classList.add('gone');
+    b.disabled = true;
+    setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 1200);
+    phone.ph.classList.remove('asleep');
+    if (isReady) phoneReady(false); // otherwise it inks in as loading finishes
+  }
+
+  // The drawn phone shakes in time with each buzz.
+  function shake(secs) {
+    if (!phone) return;
+    var ph = phone.ph;
+    ph.classList.remove('buzzing');
+    void ph.offsetWidth;
+    ph.classList.add('buzzing');
+    clearTimeout(ph._buzzT);
+    ph._buzzT = setTimeout(function () { ph.classList.remove('buzzing'); }, Math.max(0.4, secs - 0.15) * 1000);
   }
 
   // Loading progress draws the phone in ink (never fully until ready).
@@ -142,6 +173,7 @@
       if (!phone || flow.stage !== 'void') return;
       phone.ph.classList.add('ready');
       phone.hit.disabled = false;
+      G.audio.buzzStart(shake);
       announce(ui.newMessage);
       focusIn(phone.node);
     };
@@ -150,6 +182,8 @@
 
   function openMessage() {
     if (flow.stage !== 'void' || !phone || phone.hit.disabled) return;
+    G.audio.buzzStop();
+    phone.ph.classList.remove('buzzing');
     phone.hit.disabled = true;
     phone.hit.remove();
     phone.ph.classList.add('open');
@@ -434,6 +468,10 @@
   // ---------------------------------------------------------------- boot + restore
   flow.init = function (config) {
     cfg = config;
+    window.addEventListener('pointerdown', function () { document.body.classList.add('pointer-input'); }, true);
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Tab' || e.key.indexOf('Arrow') === 0) document.body.classList.remove('pointer-input');
+    }, true);
     ui = cfg.ui;
     root = document.getElementById('ui');
     live = el('p', { class: 'sr-only', 'aria-live': 'polite' });
@@ -451,6 +489,7 @@
     document.body.setAttribute('data-stage', flow.stage);
     if (flow.stage === 'void') {
       show(buildPhone(false), true);
+      focusIn(current);
       setInk(0.08);
       window.addEventListener('garden:progress', function (e) {
         if (flow.stage === 'void') setInk(0.08 + 0.72 * (e.detail || 0));
@@ -460,7 +499,8 @@
 
   // Called once assets are in and the benchmark is done.
   flow.ready = function () {
-    if (flow.stage === 'void' && phone) phoneReady(false);
+    isReady = true;
+    if (flow.stage === 'void' && phone) { if (begun) phoneReady(false); }
     else flow.restore();
     // Returning visitors past the message: sound starts on their first tap anywhere.
     if (musicStage(flow.stage)) {
@@ -479,6 +519,7 @@
   flow.restore = function () {
     clearTimers();
     G.fx.stop();
+    G.audio.buzzStop();
     flow.replaying = false;
     document.getElementById('scene').style.opacity = '';
     var stage = G.state.data.stage;
@@ -491,7 +532,7 @@
     G.audio.swell(stage === 'bloom' || stage === 'letter');
     phone = null;
     switch (stage) {
-      case 'void': show(buildPhone(false), true); phoneReady(true); break;
+      case 'void': begun = false; show(buildPhone(false), true); break;
       case 'message': show(buildPhone(true), true); playThread(true); break;
       case 'choices': showChoices(true); break;
       case 'review': showReview(true); break;

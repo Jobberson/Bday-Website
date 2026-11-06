@@ -69,6 +69,8 @@
 
   // ---------------------------------------------------------------- setup
   A.init = function (cfg) {
+    A.buzzInit(cfg);
+    document.addEventListener('visibilitychange', onVisibility);
     mc = cfg.music;
     if (!mc) return;
     A.enabled = true;
@@ -90,7 +92,6 @@
       probe.src = mc.src;
     }, { once: true });
 
-    document.addEventListener('visibilitychange', onVisibility);
   };
 
   function prefetch() {
@@ -268,8 +269,84 @@
     els.forEach(function (el) { try { el.pause(); } catch (e) { /* ignore */ } });
   }
 
+  // ---------------------------------------------------------------- the phone buzz (VOID)
+  // A short buzz on a loop: buzz, `gap` seconds of silence, buzz… until stopped.
+  // onRing(seconds) is called at every buzz so the drawn phone can shake in time.
+  var buzz = { el: null, on: false, timer: null, onRing: null, dur: 2, gap: 3, vibrate: false };
+
+  A.buzzInit = function (cfg) {
+    var b = cfg.phoneBuzz;
+    if (!b) return;
+    buzz.gap = Math.max(0, num(b.gap, 3));
+    buzz.vibrate = b.vibrate !== false;
+    var el = new Audio();
+    el.preload = 'auto';
+    el.addEventListener('loadedmetadata', function () { if (isFinite(el.duration) && el.duration > 0) buzz.dur = el.duration; });
+    el.addEventListener('error', function () { U.warn('could not load phone buzz "' + b.src + '"; the phone will shake silently'); buzz.el = null; });
+    el.addEventListener('ended', function () { if (buzz.on) next(buzz.gap); });
+    el.src = b.src;
+    buzz.el = el;
+  };
+
+  // Call inside the first tap: iOS only lets an element play later if it played in a tap.
+  A.unlockBuzz = function () {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ }
+    var el = buzz.el;
+    if (!el || buzz.unlocked) return;
+    buzz.unlocked = true;
+    el.muted = true;
+    var p = el.play();
+    var done = function () { if (!buzz.on) { el.pause(); el.currentTime = 0; } el.muted = false; };
+    if (p && p.then) p.then(done, function () { el.muted = false; });
+    else done();
+  };
+
+  // navigator.vibrate is only allowed after a real tap (and doesn't exist on iPhone).
+  function canVibrate() {
+    var act = navigator.userActivation;
+    return !!navigator.vibrate && (!act || act.hasBeenActive);
+  }
+
+  function next(afterSecs) {
+    clearTimeout(buzz.timer);
+    buzz.timer = setTimeout(ring, afterSecs * 1000);
+  }
+
+  function ring() {
+    if (!buzz.on || document.hidden) return;
+    if (buzz.onRing) { try { buzz.onRing(buzz.dur); } catch (e) { /* ignore */ } }
+    if (buzz.vibrate && canVibrate()) { try { navigator.vibrate([380, 160, 380, 160, 380]); } catch (e) { /* ignore */ } }
+    var el = buzz.el;
+    if (!el) { next(buzz.dur + buzz.gap); return; }
+    el.muted = false;
+    try { el.currentTime = 0; } catch (e) { /* ignore */ }
+    var p = el.play();
+    // No sound allowed? Keep the same rhythm for the shaking anyway.
+    if (p && p.catch) p.catch(function () { if (buzz.on) next(buzz.dur + buzz.gap); });
+  }
+
+  A.buzzStart = function (onRing) {
+    if (buzz.on) return;
+    buzz.on = true;
+    buzz.onRing = onRing;
+    ring();
+  };
+
+  A.buzzStop = function () {
+    buzz.on = false;
+    clearTimeout(buzz.timer);
+    if (buzz.el) { try { buzz.el.pause(); } catch (e) { /* ignore */ } }
+    if (canVibrate()) { try { navigator.vibrate(0); } catch (e) { /* ignore */ } }
+  };
+
   // ---------------------------------------------------------------- page hidden / shown
   function onVisibility() {
+    // The buzz pauses while the tab is hidden and picks up again on return.
+    if (buzz.on) {
+      clearTimeout(buzz.timer);
+      if (document.hidden) { if (buzz.el) buzz.el.pause(); }
+      else next(0.6);
+    }
     if (!A.started || !A.enabled) return;
     clearTimeout(hiddenTimer);
     if (document.hidden) {
@@ -310,6 +387,7 @@
     return {
       mode: A.mode, state: ctx ? ctx.state : null, time: ctx ? +ctx.currentTime.toFixed(2) : null,
       gain: master ? +master.gain.value.toFixed(3) : els[0] ? +els[0].volume.toFixed(3) : null,
+      buzz: { on: buzz.on, playing: !!(buzz.el && !buzz.el.paused), t: buzz.el ? +buzz.el.currentTime.toFixed(2) : null },
       sources: sources.length, elements: els.map(function (el) { return el.paused ? 'paused' : +el.currentTime.toFixed(1); })
     };
   };

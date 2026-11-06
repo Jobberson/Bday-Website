@@ -66,6 +66,9 @@ html, body {
   outline-offset: 4px;
   border-radius: 6px;
 }
+/* After a tap or click, focus moves (for screen readers) without drawing rings;
+   they come back as soon as the keyboard is used. */
+body.pointer-input :focus-visible { outline: none; }
 
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
@@ -125,9 +128,45 @@ html, body {
   width: calc(var(--ph) / 2);
   height: var(--ph);
   transform: scale(0.56);
-  transition: transform 1.3s cubic-bezier(0.22, 0.8, 0.24, 1);
+  transition: transform 1.3s cubic-bezier(0.22, 0.8, 0.24, 1), opacity 1.6s ease;
 }
 .phone.open { transform: none; }
+.phone.asleep { opacity: 0; pointer-events: none; }
+
+/* first tap: "turn your sound on, then tap anywhere" */
+.begin {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font: inherit;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: opacity 1s ease;
+}
+.begin span {
+  font-size: clamp(1.15rem, 4.6vw, 1.4rem);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  animation: beginIn 2.4s ease 0.5s both, beginPulse 3.6s ease-in-out 2.9s infinite;
+}
+@keyframes beginIn { from { opacity: 0; } to { opacity: 0.85; } }
+@keyframes beginPulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.45; } }
+.begin.gone { opacity: 0; pointer-events: none; }
+
+/* the phone shakes while it buzzes */
+.phone.buzzing .phone-ink, .phone.buzzing .screen { animation: buzz 0.16s linear infinite; }
+@keyframes buzz {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  25% { transform: translate(-3px, 1px) rotate(-1.2deg); }
+  50% { transform: translate(3px, -1px) rotate(1deg); }
+  75% { transform: translate(-2px, 0) rotate(-0.8deg); }
+}
 .phone-body { position: absolute; inset: 0; }
 .phone.ready:not(.open) .phone-body { animation: breathe 4.2s ease-in-out infinite; }
 @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.018); } }
@@ -560,6 +599,7 @@ html, body {
   #scene { transition-duration: 2s; }
   .stage { transform: none; }
   .phone.ready:not(.open) .phone-body, .notif .dot, .bubble.typing i { animation: none; }
+  .phone.buzzing .phone-ink, .phone.buzzing .screen, .begin span { animation: none; opacity: 0.85; }
   .letter .line, .closing { filter: none; transform: none; }
   .stage-choices.entering .cards li { animation-name: cardFade; }
   @keyframes cardFade { from { opacity: 0; } }

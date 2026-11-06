@@ -18,8 +18,10 @@
     cfg.speed = Math.max(0.05, num(raw.speed, 1));
     cfg.herName = raw.herName || '';
     cfg.requireAllPicks = !!raw.requireAllPicks;
+    cfg.rememberProgress = !!raw.rememberProgress;
+    cfg.phoneBuzz = raw.phoneBuzz && raw.phoneBuzz.src ? Object.assign({ gap: 3, vibrate: true }, raw.phoneBuzz) : null;
     cfg.ui = Object.assign({
-      newMessage: '1 new message', openMessage: 'Open message', messageFrom: '', continue: 'continue',
+      tapToBegin: 'tap anywhere to begin', newMessage: '1 new message', openMessage: 'Open message', messageFrom: '', continue: 'continue',
       chosen: 'chosen', picksLeft: '{n} left to choose', pickLeftOne: '1 left to choose', picksDone: 'all chosen',
       choose: 'choose this', unchoose: 'let this go', close: 'close', seeMyDay: 'see my day',
       reviewHeading: 'Your day', changeSomething: 'change something', confirm: 'confirm',

@@ -11,6 +11,8 @@ window.GARDEN_CONFIG = {
   // false: "see my day" appears after her first pick (unused picks bloom at the end).
   // true: she has to choose all of them first.
   requireAllPicks: false,
+  // false: every reload starts from the blank page. true: a reload returns to where she was.
+  rememberProgress: false,
   speed: 1,
 
   // Pacing of the words (seconds, also divided by `speed`).
@@ -54,6 +56,14 @@ window.GARDEN_CONFIG = {
 
   // Optional. Set to null to hide.
   photo: null, // { src: 'assets/images/us.webp', alt: 'The two of us', caption: 'us, last summer' }
+  // The phone buzzing on the blank page, after her first tap. Set to null for silence
+  // (the phone still shakes).
+  phoneBuzz: {
+    src: 'assets/audio/phone-buzz.mp3',
+    gap: 3,            // seconds of silence between buzzes
+    vibrate: true      // also vibrate her real phone along with it (Android only)
+  },
+
   // Optional. Set to null for no music (the sound toggle is hidden too).
   music: {
     src: 'assets/audio/el-descanso.m4a',
@@ -96,6 +106,7 @@ window.GARDEN_CONFIG = {
   // Every UI label in one place (translate here).
   ui: {
     pageTitle: "Cele's birthday garden",
+    tapToBegin: 'turn your sound on, then tap anywhere',
     newMessage: '1 new message',
     openMessage: 'Open message',
     messageFrom: 'Pedro',
