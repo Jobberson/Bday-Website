@@ -32,7 +32,6 @@ window.GARDEN_CONFIG = {
     petals: 22,        // falling during the final bloom
     ambientPetals: 6,  // drifting forever after the bloom
     motes: 10,         // specks of warm light floating, from the moment the garden appears
-    breathe: 0.04,     // the whole garden slowly drifts and zooms in by up to this much (4%), always
     colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4']
   },
 

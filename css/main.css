@@ -39,16 +39,6 @@ html, body {
   opacity: 1;
   transition: opacity 1.4s ease;
 }
-/* The garden breathes: a slow, tiny zoom (moved by the GPU, the canvas isn't redrawn). */
-#scene.breathing { animation: gardenBreathe 30s ease-in-out infinite; will-change: transform; }
-/* A slow drifting camera: in and out, swaying left then right. Never zooms out past
-   100%, and the sideways sway is always smaller than the zoom margin. */
-@keyframes gardenBreathe {
-  0%, 100% { transform: scale(1) translate(0, 0); }
-  25% { transform: scale(var(--breathe-mid, 1.024)) translate(-0.8%, -0.3%); }
-  50% { transform: scale(var(--breathe, 1.04)) translate(0, -0.7%); }
-  75% { transform: scale(var(--breathe-mid, 1.024)) translate(0.8%, -0.3%); }
-}
 /* Hidden benchmark: still rendered and composited, but invisible. */
 #scene.benching { opacity: 0.001; transition: none; }
 

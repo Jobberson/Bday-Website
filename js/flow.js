@@ -232,7 +232,7 @@
     clearTimers();
     setStage('choices');
     G.triggers.fire('choicesShown');
-    G.fx.ambient(cfg, false); // the garden starts breathing as soon as it appears
+    G.fx.ambient(cfg, false); // floating light starts as soon as the garden appears
     phone = null;
     showChoices(false);
   }
