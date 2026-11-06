@@ -31,7 +31,7 @@
     }, raw.ui);
     cfg.pacing = Object.assign({ messageLineGap: 1.4, typing: 0.9, letterDelay: 1.5, letterLineGap: 1.2, letterPerChar: 0.03 }, raw.pacing);
     cfg.pickHues = Array.isArray(raw.pickHues) && raw.pickHues.length ? raw.pickHues : ['#b7cddb', '#a9c79a', '#e8aab6'];
-    cfg.fx = Object.assign({ petals: 22, ambientPetals: 6, motes: 10, colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
+    cfg.fx = Object.assign({ petals: 22, ambientPetals: 6, motes: 10, sway: 0.015, swayPivot: [1105, 920], colors: ['#e8aab6', '#f1c4cb', '#e4a58e'] }, raw.fx);
     cfg.phoneMessage = Array.isArray(raw.phoneMessage) ? raw.phoneMessage : raw.phoneMessage ? [String(raw.phoneMessage)] : [];
     cfg.letter = Array.isArray(raw.letter) ? raw.letter : raw.letter ? [String(raw.letter)] : [];
     cfg.photo = raw.photo && raw.photo.src ? raw.photo : null;
@@ -97,7 +97,8 @@
         origin: l.origin || 'center',
         brush: l.brush === undefined ? 'auto' : l.brush,
         blend: blend,
-        opacity: U.clamp(num(l.opacity, 1), 0, 1)
+        opacity: U.clamp(num(l.opacity, 1), 0, 1),
+        sway: U.clamp(num(l.sway, 0), 0, 3)
       };
     });
     return cfg;

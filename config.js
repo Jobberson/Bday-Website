@@ -32,6 +32,8 @@ window.GARDEN_CONFIG = {
     petals: 22,        // falling during the final bloom
     ambientPetals: 6,  // drifting forever after the bloom
     motes: 10,         // specks of warm light floating, from the moment the garden appears
+    sway: 0.015,       // wind in the tree: how far the canopy leans (0 = still, 0.03 = windy)
+    swayPivot: [1105, 920], // art point the canopy bends around (top of the trunk)
     colors: ['#e8aab6', '#f1c4cb', '#e4a58e', '#f5d9c4']
   },
 
@@ -229,6 +231,7 @@ window.GARDEN_CONFIG = {
       brush        'auto', or an index into `brushes`
       blend        'multiply' (paint), 'normal', 'screen', 'soft-light'…
       opacity      0–1
+      sway         1 = moves with the wind in the tree (fx.sway), 0/absent = still
     Triggers: start, messageOpened, choicesShown, pick1…pickN, confirmed, letterShown, sent,
     and act:<activity id> (fires while that activity is chosen; drains if she lets it go).
     Pick triggers above picksAllowed automatically move to 'confirmed'.
@@ -255,9 +258,9 @@ window.GARDEN_CONFIG = {
     { id: 'trunk',     image: 'placeholder:trunk',     sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 0,   duration: 4,   origin: [1100, 1400], brush: 'auto', blend: 'multiply', sketchDelay: 0.5 },
     { id: 'canopy',    image: 'placeholder:canopy',    sketchOn: 'choicesShown', colorOn: 'pick2',
-      delay: 3.0, duration: 5,   origin: [1110, 640],  brush: 'auto', blend: 'multiply', sketchDelay: 1.1 },
+      delay: 3.0, duration: 5,   origin: [1110, 640],  brush: 'auto', blend: 'multiply', sketchDelay: 1.1, sway: 1 },
     { id: 'lights',    image: 'placeholder:lights',    sketchOn: null, colorOn: 'act:movies',
-      delay: 1.2, duration: 3,   origin: [1120, 700],  brush: 'auto', blend: 'normal' },
+      delay: 1.2, duration: 3,   origin: [1120, 700],  brush: 'auto', blend: 'normal', sway: 1 },
     { id: 'grass',     image: 'placeholder:grass',     sketchOn: 'choicesShown', colorOn: 'pick2',
       delay: 3.0, duration: 5,   origin: [1024, 1700], brush: 'auto', blend: 'multiply', sketchDelay: 1.3 },
     { id: 'flowers',   image: 'placeholder:flowers',   sketchOn: 'choicesShown', colorOn: 'pick3',
@@ -271,7 +274,7 @@ window.GARDEN_CONFIG = {
     { id: 'veggies',   image: 'placeholder:veggies',   sketchOn: null, colorOn: 'act:cook',
       delay: 1.2, duration: 2.5, origin: [1360, 1330], brush: 'auto', blend: 'normal' },
     { id: 'petals',    image: 'placeholder:petals',    sketchOn: 'choicesShown', colorOn: 'pick3',
-      delay: 1.5, duration: 5,   origin: [1110, 600],  brush: 'auto', blend: 'normal', sketchDelay: 1.7 },
+      delay: 1.5, duration: 5,   origin: [1110, 600],  brush: 'auto', blend: 'normal', sketchDelay: 1.7, sway: 1 },
     { id: 'light',     image: 'placeholder:light',     sketchOn: null,           colorOn: 'pick3',
       delay: 3.0, duration: 6,   origin: [1500, 380],  brush: 'auto', blend: 'normal' }
   ]

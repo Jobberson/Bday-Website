@@ -27,6 +27,7 @@
   var cachePool = {};
   var ticker = null;
   var running = false, last = 0;
+  var swayOn = false, planSway = false, swayRendered = 0;
   var tint = { cur: [251, 250, 248], from: null, to: null, s: 1, dur: 1, active: false };
   var stats = (scene.stats = { dts: [], cpus: [], lastCpu: 0 });
 
@@ -254,6 +255,24 @@
   // ---------------------------------------------------------------- compositing
   function isAnimating(L) { return L.bench || L.sk.active || L.co.active || L.pres.active; }
 
+  // ---- wind in the tree: layers with `sway` are drawn live with a slow lean ----
+  // A horizontal skew around the top of the trunk: the higher a point, the further it
+  // leans. Canvas draws at sub-pixel positions, so the motion stays smooth.
+  var SWAY_FPS_MS = 33; // while only the wind moves, redraw at ~30 fps to save battery
+  function swaying(L) {
+    return swayOn && L.def.sway > 0 && !L.bench && !!L.color && (L.co.v > 0 || (L.sk.v > 0 && !!L.sketch));
+  }
+  function swayAmount(now) {
+    var t = now / 1000;
+    // two slow waves together feel like gentle, uneven gusts
+    return cfg.fx.sway * (0.62 * Math.sin(t * 2 * Math.PI / 6.8) + 0.38 * Math.sin(t * 2 * Math.PI / 3.1 + 1.3));
+  }
+  function applySway(x, L) {
+    var k = swayAmount(performance.now()) * L.def.sway;
+    var py = view.oy + cfg.fx.swayPivot[1] * view.k;
+    x.setTransform(1, 0, k, 1, -k * py, 0);
+  }
+
   function settledKey(L) {
     if (!L.color) return null;
     if (L.co.v >= 1) return 'c';
@@ -270,7 +289,7 @@
   function buildPlan() {
     var items = [], run = null;
     layers.forEach(function (L) {
-      if (isAnimating(L)) { run = null; if (L.color) items.push({ anim: L }); return; }
+      if (isAnimating(L) || swaying(L)) { run = null; if (L.color) items.push({ anim: L }); return; }
       var k = settledKey(L);
       if (!k) return; // invisible layers don't split runs
       // Grey sketches always sit IN the paper (multiply); colour uses the layer's blend.
@@ -299,10 +318,18 @@
       if (!used[k]) { putCanvas(cachePool[k]); delete cachePool[k]; }
     });
     plan = items;
+    planSway = items.some(function (it) { return it.anim && swaying(it.anim); });
     planDirty = false;
   }
 
   function drawAnimating(L) {
+    var sw = swaying(L);
+    if (sw) applySway(dctx, L);
+    drawLayer(L);
+    if (sw) dctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  function drawLayer(L) {
     var x = dctx, pres = L.pres.v * L.def.opacity, p = L.co.v;
     var sa = L.sk.v * cfg.reveal.sketchOpacity * pres;
     x.globalCompositeOperation = 'multiply';
@@ -364,6 +391,7 @@
     x.globalAlpha = 1;
     stats.lastCpu = performance.now() - t0;
     needsRender = false;
+    if (planSway && !running) wake(); // keep the wind going
     return stats.lastCpu;
   }
 
@@ -403,7 +431,7 @@
   }
 
   function anyActive() {
-    if (tint.active) return true;
+    if (tint.active || planSway) return true;
     for (var i = 0; i < layers.length; i++) if (isAnimating(layers[i])) return true;
     return false;
   }
@@ -414,7 +442,9 @@
     if (dt > 0.1) dt = 0.1;
     if (dt < 0) dt = 0;
     var u = update(dt);
-    if (u.any || needsRender) {
+    var windDue = planSway && now - swayRendered >= SWAY_FPS_MS;
+    if (u.any || needsRender || windDue) {
+      swayRendered = now;
       var cpu = render();
       if (u.any) {
         stats.dts.push(dt * 1000); stats.cpus.push(cpu);
@@ -445,6 +475,7 @@
     canvas.width = W;
     canvas.height = H;
     dctx = canvas.getContext('2d');
+    swayOn = !!(cfg.fx && cfg.fx.sway) && T.mode !== 'fade' && !U.reducedMotion();
     realloc();
     releaseCaches();
     layers.forEach(prepareLayer);

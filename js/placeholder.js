@@ -431,21 +431,27 @@
         if (j === 0) spot(ctx, x, y, rad * 0.35, rad * 0.3, darker(col, 0.4), 0.45);
       }
     }
+    fallenPetals(ctx, c);
   };
+
+  // petals that have fallen on the grass (part of the flowers layer, so they don't sway)
+  function fallenPetals(ctx, c) {
+    var r = U.rng(9090);
+    for (var k = 0; k < 18; k++) {
+      ctx.save();
+      ctx.translate(800 + r() * 700, 1300 + r() * 300);
+      ctx.rotate(r() * Math.PI);
+      ctx.fillStyle = U.rgba(c.blossom, 0.45);
+      ctx.beginPath(); ctx.ellipse(0, 0, 9, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+  }
 
   P.petals = function (ctx, c, r, n) {
     for (var i = 0; i < 60; i++) {
       var a = r() * Math.PI * 2, d = Math.sqrt(r());
       var x = 1110 + Math.cos(a) * d * 420, y = 610 + Math.sin(a) * d * 270, rad = 10 + r() * 16;
       wash(ctx, blob(x, y, rad, rad * 0.8, n, i * 1.9, 0.3, 14), c.blossom, 0.58, r, { jitter: 3, passes: 3, rim: 1.2, rimWidth: rad * 0.35 });
-    }
-    for (var k = 0; k < 18; k++) {
-      ctx.save();
-      ctx.translate(800 + r() * 700, 900 + r() * 700);
-      ctx.rotate(r() * Math.PI);
-      ctx.fillStyle = U.rgba(c.blossom, 0.45);
-      ctx.beginPath(); ctx.ellipse(0, 0, 9, 5, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
     }
   };
 
