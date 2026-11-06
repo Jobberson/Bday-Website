@@ -110,7 +110,7 @@ window.GARDEN_CONFIG = {
 
   // ---------------------------------------------------------------- email
   email: {
-    web3formsAccessKey: '', // get one free at https://web3forms.com
+    web3formsAccessKey: 'f30ac8de-1fb5-4f5b-b8d7-2282b1aea5fa', // get one free at https://web3forms.com
     subject: "Cele's birthday picks",
     fromName: 'Birthday garden'
   },
