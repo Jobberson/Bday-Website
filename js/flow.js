@@ -465,10 +465,34 @@
     renderMute();
   }
 
+  // A soft ripple spreading from the finger on buttons and cards.
+  function ripple(e) {
+    var host = e.target && e.target.closest && e.target.closest('.btn, .card');
+    if (!host || host.disabled || U.reducedMotion()) return;
+    var r = host.getBoundingClientRect(), size = Math.max(r.width, r.height) * 2.2;
+    var dot = el('span', { class: 'ripple', 'aria-hidden': 'true' });
+    dot.style.width = dot.style.height = size + 'px';
+    dot.style.left = (e.clientX - r.left - size / 2) + 'px';
+    dot.style.top = (e.clientY - r.top - size / 2) + 'px';
+    host.appendChild(dot);
+    setTimeout(function () { if (dot.parentNode) dot.parentNode.removeChild(dot); }, 800);
+  }
+
   // ---------------------------------------------------------------- boot + restore
   flow.init = function (config) {
     cfg = config;
-    window.addEventListener('pointerdown', function () { document.body.classList.add('pointer-input'); }, true);
+    window.addEventListener('pointerdown', function (e) {
+      document.body.classList.add('pointer-input');
+      ripple(e);
+    }, true);
+
+    // Show the first words only once the handwriting-like font is in (max 2.5 s).
+    var fontsDone = function () { document.documentElement.classList.add('fonts-ready'); };
+    try {
+      if (document.fonts && document.fonts.load) {
+        Promise.race([document.fonts.load("italic 300 20px 'Cormorant Garamond'"), U.wait(2500)]).then(fontsDone, fontsDone);
+      } else fontsDone();
+    } catch (e) { fontsDone(); }
     window.addEventListener('keydown', function (e) {
       if (e.key === 'Tab' || e.key.indexOf('Arrow') === 0) document.body.classList.remove('pointer-input');
     }, true);

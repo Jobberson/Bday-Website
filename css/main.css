@@ -2,7 +2,7 @@
 :root {
   --paper: #fbfaf8;
   --ink: #4f4a47;
-  --ink-soft: #7d7671;
+  --ink-soft: #6f6863; /* ≥ 4.5:1 on the paper, for small text */
   --serif: 'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif;
 }
 
@@ -87,7 +87,15 @@ body.pointer-input :focus-visible { outline: none; }
 .stage > * { pointer-events: auto; }
 
 /* ---------------------------------------------------------------- buttons */
+.btn, .card, .phone-hit, .begin, .mute {
+  touch-action: manipulation;          /* no double-tap zoom delay */
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;         /* no long-press menu on iOS */
+}
 .btn {
+  position: relative;
+  overflow: hidden;
   font: inherit;
   font-size: 1.12rem;
   font-weight: 400;
@@ -102,7 +110,24 @@ body.pointer-input :focus-visible { outline: none; }
   transition: background 0.3s, border-color 0.3s, transform 0.2s, opacity 0.5s;
 }
 .btn.primary { background: var(--ink); border-color: var(--ink); color: #fbfaf8; }
-.btn.primary:hover { background: #3f3a37; }
+@media (hover: hover) {
+  .btn.primary:hover { background: #3f3a37; }
+  .card:hover { box-shadow: 0 8px 28px rgba(70, 55, 40, 0.12); }
+}
+
+/* tap feedback: a soft ripple from the finger, and a slight press */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 0.5;
+  animation: ripple 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  background: rgba(79, 74, 71, 0.16);
+}
+.btn.primary .ripple { background: rgba(255, 255, 255, 0.28); }
+@keyframes ripple { to { transform: scale(1); opacity: 0; } }
+.card:active { transform: scale(0.985); }
 .btn.quiet {
   background: transparent; border-color: transparent; color: var(--ink-soft);
   text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.25em;
@@ -143,10 +168,11 @@ body.pointer-input :focus-visible { outline: none; }
   font-size: clamp(1.15rem, 4.6vw, 1.4rem);
   font-style: italic;
   letter-spacing: 0.02em;
-  animation: beginIn 2.4s ease 0.5s both, beginPulse 3.6s ease-in-out 2.9s infinite;
+  opacity: 0;
 }
+html.fonts-ready .begin span { animation: beginIn 2.4s ease 0.3s both, beginPulse 3.6s ease-in-out 2.7s infinite; }
 @keyframes beginIn { from { opacity: 0; } to { opacity: 0.85; } }
-@keyframes beginPulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.45; } }
+@keyframes beginPulse { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.6; } }
 .begin.gone { opacity: 0; pointer-events: none; }
 
 /* the phone shakes while it buzzes */
@@ -188,7 +214,7 @@ body.pointer-input :focus-visible { outline: none; }
 
 .notif {
   display: flex; align-items: center; justify-content: center; gap: 0.5em;
-  margin: 0; font-size: 1.9rem; font-style: italic; color: var(--ink);
+  margin: 0; font-size: calc(var(--ph) * 0.052); font-style: italic; color: var(--ink); white-space: nowrap;
   opacity: 0; transition: opacity 1.2s ease;
 }
 .phone.ready .notif { opacity: 1; }
@@ -269,7 +295,7 @@ body.pointer-input :focus-visible { outline: none; }
 .cards {
   list-style: none;
   margin: 0;
-  padding: 0 9vw;
+  padding: 0 max(9vw, env(safe-area-inset-right)) 0 max(9vw, env(safe-area-inset-left));
   display: flex;
   gap: 12px;
   width: max-content;
@@ -298,9 +324,8 @@ body.pointer-input :focus-visible { outline: none; }
   border-radius: 16px;
   box-shadow: 0 6px 22px rgba(70, 55, 40, 0.08);
   cursor: pointer;
-  transition: opacity 0.6s ease, box-shadow 0.35s ease;
+  transition: opacity 0.6s ease, box-shadow 0.35s ease, transform 0.18s ease;
 }
-.card:hover { box-shadow: 0 8px 28px rgba(70, 55, 40, 0.12); }
 .card .title { font-size: 1.32rem; font-weight: 500; line-height: 1.15; }
 .card .short { font-size: 1.02rem; line-height: 1.3; color: var(--ink-soft); }
 .card .mark {
@@ -329,7 +354,7 @@ body.pointer-input :focus-visible { outline: none; }
 .btn.see { opacity: 0; transform: translateY(6px); pointer-events: none; }
 .btn.see.show { opacity: 1; transform: none; pointer-events: auto; }
 
-@media (min-width: 900px) {
+@media (min-width: 700px) and (min-height: 600px) {
   .cards-scroll { overflow: visible; padding-bottom: 18px; }
   .cards {
     display: grid;
@@ -339,6 +364,11 @@ body.pointer-input :focus-visible { outline: none; }
     padding: 0;
   }
   .card { width: 100%; min-height: 118px; }
+}
+@media (min-width: 700px) and (max-width: 899px) and (min-height: 600px) {
+  .cards { gap: 10px; }
+  .card { min-height: 108px; padding: 0.9rem 0.95rem 1.5rem; }
+  .card .title { font-size: 1.22rem; }
 }
 
 /* ---------------------------------------------------------------- detail sheet */
@@ -357,6 +387,10 @@ body.pointer-input :focus-visible { outline: none; }
   border-radius: 22px 22px 0 0;
   padding: 1.6rem 1.5rem calc(1.2rem + env(safe-area-inset-bottom));
   box-shadow: 0 -8px 40px rgba(60, 50, 40, 0.12);
+  max-height: 88vh;
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateY(105%);
   transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -541,6 +575,27 @@ body.pointer-input :focus-visible { outline: none; }
 @keyframes sway {
   from { transform: translateX(calc(var(--sway) * -1)) rotate(0deg); }
   to { transform: translateX(var(--sway)) rotate(var(--spin)); }
+}
+
+/* ---------------------------------------------------------------- phones held sideways */
+@media (orientation: landscape) and (max-height: 520px) {
+  .phone { transform: scale(0.8); }
+  /* the open message becomes a wide card instead of a tall, narrow phone */
+  .phone.open {
+    width: min(78vw, 520px);
+    height: calc(100vh - 24px);
+    height: calc(100dvh - 24px);
+  }
+  .phone.open .phone-ink { opacity: 0 !important; }
+  .phone.open .screen { inset: 0; border-radius: 18px; box-shadow: 0 10px 40px rgba(70, 55, 40, 0.1); }
+  .phone.open .from { margin-top: 0.8rem; }
+  .card { min-height: 104px; padding: 0.8rem 1rem 1.4rem; }
+  .card .title { font-size: 1.2rem; }
+  .cards-scroll { padding: 6px 0 8px; }
+  .stage-choices .actions { min-height: 48px; }
+  .stage-review, .stage-send { align-items: center; padding: 10px max(14px, env(safe-area-inset-right)) 10px max(14px, env(safe-area-inset-left)); }
+  .letter { padding: 1.4rem 1.6rem 1.2rem; }
+  .stage-done { padding-bottom: calc(8vh + env(safe-area-inset-bottom)); }
 }
 
 /* ---------------------------------------------------------------- debug panel (?debug) */

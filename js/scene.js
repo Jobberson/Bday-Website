@@ -602,6 +602,9 @@
 
   scene.setTint = function (rgb, dur) {
     if (!rgb) return;
+    // The phone's browser bar takes the paper colour too.
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', 'rgb(' + rgb.map(Math.round).join(',') + ')');
     if (!dur) { tint.cur = rgb.slice(); tint.active = false; needsRender = true; scene.renderNow(); return; }
     tint.from = tint.cur.slice(); tint.to = rgb.slice(); tint.s = 0; tint.dur = dur; tint.active = true;
     wake();
