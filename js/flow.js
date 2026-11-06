@@ -300,7 +300,7 @@
     var lines = cfg.letter.map(function (l) { return el('p', { class: 'line', text: fill(l) }); });
     var photo = null;
     if (cfg.photo && G.loader.assets.photo) {
-      photo = el('figure', { class: 'polaroid' }, [
+      photo = el('figure', { class: 'polaroid' + (cfg.photo.caption ? '' : ' no-caption') }, [
         el('img', { src: cfg.photo.src, alt: cfg.photo.alt || '', decoding: 'async' }),
         cfg.photo.caption ? el('figcaption', { text: cfg.photo.caption }) : null
       ]);

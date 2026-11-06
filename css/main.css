@@ -476,7 +476,8 @@ html.fonts-ready .begin span { animation: beginIn 2.4s ease 0.3s both, beginPuls
   transition: opacity 1.4s ease, transform 1.6s ease;
 }
 .polaroid.in { opacity: 1; transform: rotate(-2.5deg); }
-.polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+.polaroid.no-caption { padding-bottom: 40px; } /* the classic thick bottom edge */
+.polaroid img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 35%; }
 .polaroid figcaption { padding: 0.55rem 0 0.8rem; text-align: center; font-size: 1.05rem; font-style: italic; }
 .letter .actions { display: flex; justify-content: center; margin-top: 1.2rem; opacity: 0; pointer-events: none; transition: opacity 1s ease; }
 .letter .actions.in { opacity: 1; pointer-events: auto; }

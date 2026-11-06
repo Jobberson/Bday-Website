@@ -1,2 +1,4 @@
 # Source audio exports (the site uses the compressed .m4a)
 assets/audio/*.wav
+# Original photos (the site uses the resized .webp)
+assets/images/us.jpg
